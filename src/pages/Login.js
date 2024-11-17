@@ -9,21 +9,43 @@ function Login() {
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
     const onSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage(''); // Clear any previous error messages
+
+        if (!validateEmail(email)) {
+            setErrorMessage('Please enter a valid email address.');
+            return;
+        }
+
+        if (password.length < 6) {
+            setErrorMessage('Password must be at least 6 characters long.');
+            return;
+        }
+
         try {
             const response = await api.post('/userService/login', { email, password });
             const { token, userId } = response.data;
-            
+
             // Save token and userId for future use
             localStorage.setItem('token', token);
-            // If userId is returned from the API in future, save that too
             localStorage.setItem('userId', userId);
 
             // Redirect to the Home page on successful login
             navigate('/home');
         } catch (error) {
-            setErrorMessage('Invalid credentials, please try again.');
+            if (error.response && error.response.status === 404) {
+                setErrorMessage('User not found. Please check your email and try again.');
+            } else if (error.response && error.response.status === 400) {
+                setErrorMessage('Incorrect emai/password. Please try again.');
+            } else {
+                setErrorMessage('Something went wrong. Please try again later.');
+            }
             console.error('Login Error:', error);
         }
     };
@@ -31,7 +53,7 @@ function Login() {
     return (
         <div className="login-container">
             <Header as="h2" textAlign="center">Login</Header>
-            <Form onSubmit={onSubmit} className="login-form">
+            <Form onSubmit={onSubmit} className="login-form" error={!!errorMessage}>
                 <Form.Input
                     type="email"
                     label="Email"
@@ -50,7 +72,7 @@ function Login() {
                     placeholder="Enter your password"
                     required
                 />
-                {errorMessage && <Message error>{errorMessage}</Message>}
+                {errorMessage && <Message error content={errorMessage} />}
                 <Button color="blue" fluid type="submit">Login</Button>
                 <Button basic color="blue" fluid onClick={() => navigate('/register')}>
                     Register

@@ -13,12 +13,13 @@ import ViewExchangeRequestsPage from './pages/ViewExchangeRequestsPage';
 import NotificationPage from './pages/NotificationPage';
 import { NotificationProvider } from './pages/NotificationContext';
 import NotificationPopup from './pages/NotificationPopup';
+import { Popup, PopupContent } from 'semantic-ui-react';
 
 
 function App() {
     return (
-        <NotificationProvider>
         <Router>
+            <NotificationProvider>
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/login" element={<Login />} />
@@ -35,8 +36,8 @@ function App() {
                 <Route path="/notifications/polling" element={<NotificationProvider />} />
                 <Route path="/notifications/popup" element={<NotificationPopup />} />
             </Routes>
+            </NotificationProvider>
         </Router>
-        </NotificationProvider>
     );
 }
 
